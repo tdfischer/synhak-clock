@@ -30,16 +30,16 @@ int direction[5] = {2, 4, 6, 8, 12};
 
 typedef boolean(*pattern_cb)();
 
-pattern_cb patterns[] = {allBlink,};
+pattern_cb patterns[] = {geometricBlink,allBlink,};
 int currentPattern = 0;
 int currentIter = 0;
 
 void loop() {
   currentIter++;
   pattern_cb func = patterns[currentPattern];
-  if (!func()) {
+  if (!func() || currentIter >= 32767) {
     currentPattern++;
-    currentIter = 0;
+    currentIter = -32768;
     if (currentPattern >= sizeof(patterns)/sizeof(pattern_cb))
       currentPattern = 0;
   }
@@ -47,15 +47,14 @@ void loop() {
 
 boolean allBlink() {
   for(int i = 0;i<lightCount;i++) {
-    if (currentIter % 128 == 0) {
+    if (currentIter % 128 < 64) {
       lights[i].value = 0;
     } else {
       lights[i].value = 255;
     }
   }
-  delay(100);
-  return currentIter < 10;
-  digitalWrite(11, HIGH);
+  writePins();
+  return true;
 }
 
 boolean geometricBlink() {
